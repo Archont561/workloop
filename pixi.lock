@@ -2,24 +2,24 @@ version: 7
 platforms:
 - name: linux-64
   virtual-packages:
-  - __unix=0
+  - __unix=0=0
   - __linux=4.18
   - __glibc=2.28
   - __archspec=0=x86_64
 - name: linux-aarch64
   virtual-packages:
-  - __unix=0
+  - __unix=0=0
   - __linux=4.18
   - __glibc=2.28
   - __archspec=0=aarch64
 - name: osx-64
   virtual-packages:
-  - __unix=0
+  - __unix=0=0
   - __osx=13.0
   - __archspec=0=x86_64
 - name: osx-arm64
   virtual-packages:
-  - __unix=0
+  - __unix=0=0
   - __osx=13.0
   - __archspec=0=m1
 - name: win-64
@@ -1584,7 +1584,6 @@ packages:
 - conda: https://prefix.dev/archont561/archont561/linux-64/pixi-sandbox-0.9.0-ha35fb5c_0.conda
   sha256: 0fdfa22127b027d1d1e391fa91601d124125831a2576b7010166018df60856ba
   md5: 3ce749fd1eba2a30d483c9fc0dff9669
-  attestations_sha256: 4709f4894683046b662adfab66f27f3647432686af5e20e0a77d898eafdd47e4
   depends:
   - libgcc >=16
   - __glibc >=2.28,<3.0.a0
