@@ -1,0 +1,47 @@
+schema_version: 1
+
+context:
+  name: workloop
+  version: 0.1.0
+
+package:
+  name: ${{ name }}
+  version: ${{ version }}
+
+source:
+  path: ../../..
+
+build:
+  number: 0
+  script:
+    - if: unix
+      then:
+        - cargo install --locked --no-track --root "$PREFIX" --path crates/workloop
+    - if: win
+      then:
+        - cargo install --locked --no-track --root "%LIBRARY_PREFIX%" --path crates/workloop
+
+requirements:
+  build:
+    - ${{ compiler('rust') }}
+    - ${{ compiler('c') }}
+    - ${{ stdlib('c') }}
+
+tests:
+  - script:
+      - workloop --version
+      - workloop --help
+
+about:
+  homepage: https://github.com/Archont561/workloop
+  repository: https://github.com/Archont561/workloop
+  license: MIT
+  license_file: LICENSE
+  summary: Zero-cost AI feature delivery loop for GitHub powered by free open models
+  description: |
+    CLI binary for workloop: orchestrator-decoupled task selection, free-model
+    failover proxy, pluggable review gates, and release handoff on GitHub.
+
+extra:
+  recipe-maintainers:
+    - Archont561

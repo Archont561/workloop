@@ -1,0 +1,38 @@
+[build-system]
+requires = ["maturin>=1.7,<2.0"]
+build-backend = "maturin"
+
+[project]
+name = "workloop"
+dynamic = ["version"]
+description = "Zero-cost AI feature delivery loop for GitHub powered by free open models"
+readme = "README.md"
+requires-python = ">=3.8"
+license = { file = "LICENSE" }
+keywords = ["github", "ai", "agent", "workflow", "cli"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: POSIX :: Linux",
+  "Programming Language :: Rust",
+]
+
+[project.urls]
+Homepage = "https://github.com/Archont561/workloop"
+Repository = "https://github.com/Archont561/workloop"
+Issues = "https://github.com/Archont561/workloop/issues"
+
+[tool.maturin]
+bindings = "bin"
+manifest-path = "Cargo.toml"
+strip = true
+sdist-include = [
+  "Cargo.toml",
+  "Cargo.lock",
+  "LICENSE",
+  "README.md",
+  "crates/workloop/**",
+  "crates/workloop-core/**",
+]

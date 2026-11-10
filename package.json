@@ -1,0 +1,34 @@
+{
+  "name": "workloop-dev",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Zero-cost AI feature delivery loop for GitHub — ship gated PRs continuously across free open-model tiers with automated reviews, green checks, and human release approvals.",
+  "author": "Archont561",
+  "license": "MIT",
+  "homepage": "https://github.com/Archont561/workloop#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Archont561/workloop.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Archont561/workloop/issues"
+  },
+  "packageManager": "bun@1.4.2",
+  "devDependencies": {
+    "@eugeniughelbur/agents-md": "0.1.0",
+    "backlog.md": "1.55.3",
+    "markdownlint-cli2": "0.24.0",
+    "readme-md-generator": "1.0.0",
+    "skills": "1.7.6"
+  },
+  "scripts": {
+    "agents-md": "agents-md",
+    "readme": "rm -f README.md && readme-md-generator -p .readme/README.template.md -y",
+    "markdownlint": "markdownlint-cli2",
+    "build": "pixi run --locked build-release",
+    "test": "pixi run --locked automation test",
+    "lint": "pixi run --locked automation lint",
+    "format": "pixi run --locked automation fmt",
+    "typecheck": "pixi run --locked automation typecheck"
+  }
+}
