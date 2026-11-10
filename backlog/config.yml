@@ -1,0 +1,17 @@
+project_name: "workloop"
+default_status: "To Do"
+statuses: ["To Do", "In Progress", "Done"]
+labels: ["architecture", "cli", "core", "proxy", "review", "ci", "docs"]
+milestones: []
+date_format: yyyy-mm-dd
+max_column_width: 24
+default_editor: "vi"
+auto_open_browser: false
+default_port: 6420
+remote_operations: false
+auto_commit: false
+zero_padded_ids: 3
+bypass_git_hooks: false
+check_active_branches: false
+active_branch_days: 30
+task_prefix: "wkl"

@@ -1,0 +1,18 @@
+name: Feature Proposal
+description: Propose a capability aligned with workloop milestones and ADRs
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Problem statement
+      description: Which part of the free-model delivery loop does this improve?
+    validations:
+      required: true
+  - type: textarea
+    id: design
+    attributes:
+      label: Proposed CLI or hook contract
+      description: Keep proposals ecosystem-, agent-, and reviewer-agnostic.
+    validations:
+      required: true

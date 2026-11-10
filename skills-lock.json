@@ -1,0 +1,68 @@
+{
+  "version": 1,
+  "skills": {
+    "audit": {
+      "source": "Archont561/clifacet",
+      "sourceType": "github",
+      "skillPath": ".agents/skills/audit/SKILL.md",
+      "computedHash": "5d38229e962a2807d822d71946dff25dfb1d9b0782989b3e3a66cb39fe1caef4",
+      "installMode": "copy"
+    },
+    "backlog": {
+      "source": "Archont561/rude-clean-code",
+      "sourceType": "github",
+      "skillPath": ".agents/skills/backlog/SKILL.md",
+      "computedHash": "0852b1eb4a54fc977cc649c87e04eb590f4e83d574e84f1196dc920bf13fe934",
+      "installMode": "copy"
+    },
+    "bdd": {
+      "source": "Archont561/clifacet",
+      "sourceType": "github",
+      "skillPath": ".agents/skills/bdd/SKILL.md",
+      "computedHash": "eae9bdd042a3ec3051b345cb6db320fb4e151087cf5ce38f8303bea081d78d26",
+      "installMode": "copy"
+    },
+    "clean-code-principles": {
+      "source": "Archont561/clifacet",
+      "sourceType": "github",
+      "skillPath": ".agents/skills/clean-code-principles/SKILL.md",
+      "computedHash": "cee8503964e1ddaea77db0b705c9ba95abf7f2fde786072e037d61d9c3fdb746",
+      "installMode": "copy"
+    },
+    "grill-me": {
+      "source": "Archont561/clifacet",
+      "sourceType": "github",
+      "skillPath": ".agents/skills/grill-me/SKILL.md",
+      "computedHash": "b69ff9ebde6dd9879176fca5bc031bf5ee20145e9d27f58a0d1ec0117d2f9d2c",
+      "installMode": "copy"
+    },
+    "refactor": {
+      "source": "Archont561/clifacet",
+      "sourceType": "github",
+      "skillPath": ".agents/skills/refactor/SKILL.md",
+      "computedHash": "d44ef0c2c5cf040512815b37e60f0919dcbfa8220cc0c8c25b96ef68abc13120",
+      "installMode": "copy"
+    },
+    "skill-creator": {
+      "source": "Archont561/clifacet",
+      "sourceType": "github",
+      "skillPath": ".agents/skills/skill-creator/SKILL.md",
+      "computedHash": "2914cc98af4a61b0c2b0043b510ba96e0f95e3a9172a49f70f750f31bfad4f0e",
+      "installMode": "copy"
+    },
+    "tdd": {
+      "source": "Archont561/clifacet",
+      "sourceType": "github",
+      "skillPath": ".agents/skills/tdd/SKILL.md",
+      "computedHash": "957e029fb417006a663a27d9053af39b295a709a18cd4553be1f858a722e7dae",
+      "installMode": "copy"
+    },
+    "writing-for-agents": {
+      "source": "Archont561/clifacet",
+      "sourceType": "github",
+      "skillPath": ".agents/skills/writing-for-agents/SKILL.md",
+      "computedHash": "caf804660a44577dd5e40331abce88c77b332b1a0524a898dc7755e973d69476",
+      "installMode": "copy"
+    }
+  }
+}

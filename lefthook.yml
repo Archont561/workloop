@@ -1,0 +1,55 @@
+# Git hooks managed by Lefthook. Install with `pixi run install-hooks`.
+# Keep pre-commit fast and deterministic; heavier compilation and test suites
+# run on pre-push and in CI.
+
+commit-msg:
+  commands:
+    convco:
+      run: pixi run --frozen --no-install convco check --from-stdin --strip < "{1}"
+
+pre-commit:
+  parallel: true
+  commands:
+    rustfmt:
+      glob: "**/*.rs"
+      run: pixi run --frozen --no-install fmt-check
+    ruff-lint:
+      glob: "**/*.py"
+      run: pixi run --frozen --no-install lint-python
+    ruff-format:
+      glob: "**/*.py"
+      run: pixi run --frozen --no-install format-python-check
+    taplo:
+      glob: "**/*.toml"
+      run: pixi run --frozen --no-install lint-toml
+    markdownlint:
+      glob: "**/*.md"
+      run: pixi run --frozen --no-install docs-lint
+    vale:
+      glob: "{README.md,AGENTS.md,CONTRIBUTING.md,docs/**/*.md,crates/*/README.md,vale.toml}"
+      run: pixi run --frozen --no-install automation lint_prose
+    gherlint:
+      glob: "**/*.feature"
+      run: pixi run --frozen --no-install automation lint_gherkin
+    shellcheck:
+      glob: "{scripts/bootstrap.sh,scripts/install_hooks.sh,.devcontainer/setup.sh}"
+      run: pixi run --frozen --no-install shellcheck scripts/bootstrap.sh scripts/install_hooks.sh .devcontainer/setup.sh
+    actionlint:
+      glob: ".github/workflows/*.{yml,yaml}"
+      run: pixi run --frozen --no-install actionlint
+    alint:
+      run: pixi run --frozen --no-install alint
+
+pre-push:
+  parallel: false
+  commands:
+    policy:
+      run: pixi run --frozen --no-install automation check_policy
+    mypy:
+      run: pixi run --frozen --no-install typecheck
+    tools-tests:
+      run: pixi run --frozen --no-install test-tools-cov
+    clippy:
+      run: pixi run --frozen --no-install clippy
+    rust-tests:
+      run: pixi run --frozen --no-install test-all

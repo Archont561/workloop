@@ -1,0 +1,33 @@
+[package]
+name = "workloop"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "Zero-cost AI feature delivery loop for GitHub powered by free open models"
+readme = "README.md"
+keywords = ["github", "ai", "agent", "workflow", "cli"]
+categories = ["command-line-utilities", "development-tools"]
+include = ["src/**", "README.md", "LICENSE", "Cargo.toml", "pyproject.toml"]
+
+[[bin]]
+name = "workloop"
+path = "src/main.rs"
+
+[dependencies]
+clap.workspace = true
+clifacet.workspace = true
+workloop-core.workspace = true
+
+[dev-dependencies]
+assert_cmd.workspace = true
+predicates.workspace = true
+rstest.workspace = true
+rstest-bdd.workspace = true
+rstest-bdd-macros.workspace = true
+
+[lints]
+workspace = true

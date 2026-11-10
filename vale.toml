@@ -1,0 +1,224 @@
+# The prose check's source of truth: what Vale runs, and the house style this repository owns.
+# `pixi run automation prose_sync` renders `.vale.ini` and `.vale/styles/Workloop/` from this file.
+
+min_alert_level = "warning"
+
+sources = ["README.md", "AGENTS.md", "CONTRIBUTING.md", "docs", "crates"]
+
+packages = [
+  "https://github.com/vale-cli/Microsoft/releases/download/v0.15.1/Microsoft.zip",
+  "https://github.com/vale-cli/write-good/releases/download/v0.4.1/write-good.zip",
+]
+
+accept = [
+  # Project, crates, and ecosystem tools.
+  "workloop",
+  "workloop-core",
+  "clifacet",
+  "alint",
+  "gherlint",
+  "archon",
+  "archont561",
+  "aider",
+  "coderabbit",
+  "deepseek",
+  "devstral",
+  "failover",
+  "gemini",
+  "glm",
+  "goose",
+  "localhost",
+  "minimax",
+  "mistral",
+  "nemotron",
+  "openai",
+  "opencode",
+  "openhands",
+  "openrouter",
+  "qwen",
+  "universe",
+  "worktree",
+  "worktrees",
+  # Build, lint, and release tooling.
+  "actionlint",
+  "assert_cmd",
+  "automerge",
+  "backlog",
+  "bootstrap",
+  "bun",
+  "canary",
+  "cargo",
+  "clap",
+  "clippy",
+  "codecov",
+  "conda",
+  "convco",
+  "devcontainer",
+  "doctests",
+  "dodo",
+  "dogfood",
+  "dogfooding",
+  "doit",
+  "frontmatter",
+  "gh",
+  "headless",
+  "jsonc",
+  "lcov",
+  "lefthook",
+  "lockfile",
+  "lockfiles",
+  "lychee",
+  "manylinux",
+  "markdownlint",
+  "maturin",
+  "monorepo",
+  "msrv",
+  "mypy",
+  "nextest",
+  "npm",
+  "oidc",
+  "pixi",
+  "pixi-sandbox",
+  "pluggable",
+  "prerelease",
+  "provenance",
+  "pypi",
+  "pytest",
+  "rattler-build",
+  "redacted",
+  "redaction",
+  "relock",
+  "repo",
+  "repos",
+  "rstest",
+  "ruff",
+  "rustdoc",
+  "rustfmt",
+  "rustsec",
+  "rustup",
+  "sdist",
+  "semver",
+  "shellcheck",
+  "stderr",
+  "stdin",
+  "stdout",
+  "subcommand",
+  "subcommands",
+  "symlink",
+  "taplo",
+  "toml",
+  "toolchain",
+  "typecheck",
+  "untrusted",
+  "vendored",
+  "vendoring",
+  "yml",
+]
+
+vocab = "Workloop"
+based_on = ["Vale", "Microsoft", "write-good", "Workloop"]
+
+[rules."Microsoft.Dashes"]
+level = "NO"
+reason = "Spaced em dashes keep terminal-width Markdown readable across 80-100 column editors."
+
+[rules."Microsoft.Contractions"]
+level = "NO"
+reason = "Formal uncontracted English keeps specification prose unambiguous."
+
+[rules."Microsoft.Semicolon"]
+level = "NO"
+reason = "Semicolons join closely paired clauses in reference tables and explanations."
+
+[rules."Microsoft.We"]
+level = "NO"
+reason = "Guides have no first-person author voice."
+
+[rules."Microsoft.Vocab"]
+level = "NO"
+reason = "Guides state observable behavior and architectural boundaries, not marketing copy."
+
+[rules."Microsoft.Avoid"]
+level = "NO"
+reason = "Technical terms like backend and standalone are used in their standard engineering sense."
+
+[rules."Microsoft.HeadingAcronyms"]
+level = "NO"
+reason = "Acronyms such as CLI, BDD, ADR, HTTP, and CI are standard in section headings."
+
+[rules."Microsoft.HeadingPunctuation"]
+level = "NO"
+reason = "Headings may use colons or question marks when introducing an explanation or procedure."
+
+[rules."Microsoft.HeadingColons"]
+level = "NO"
+reason = "Headings may end in colons before structured lists or reference blocks."
+
+[rules."Microsoft.Adverbs"]
+level = "NO"
+reason = "Words such as deliberately and explicitly mark intentional architectural refusals."
+
+[rules."Microsoft.Terms"]
+level = "NO"
+reason = "Coding agents are named 'agents' consistently with AGENTS.md and skills tooling."
+
+[rules."Microsoft.Quotes"]
+level = "NO"
+reason = "Technical prose places punctuation outside quoted CLI literals and identifiers."
+
+[rules."Microsoft.RangeFormat"]
+level = "NO"
+reason = "Numeric and stage ranges use standard ASCII hyphens or en-dashes."
+
+[rules."Microsoft.FirstPerson"]
+level = "NO"
+reason = "Scenario descriptions use Gherkin user stories where appropriate."
+
+[rules."write-good.ThereIs"]
+level = "NO"
+reason = "Introductory sentences may open with 'There is' when listing repository invariants."
+
+[rules."write-good.TooWordy"]
+level = "NO"
+reason = "Technical precision takes precedence over brevity alerts."
+
+[rules."write-good.E-Prime"]
+level = "NO"
+reason = "Guides state what files and boundaries are."
+
+[rules."write-good.Passive"]
+level = "NO"
+reason = "Technical prose states how tooling acts on manifests, builds, and packages."
+
+[rules."write-good.Weasel"]
+level = "NO"
+reason = "Qualifiers express deliberate scope exceptions honestly."
+
+[rules."write-good.Illusions"]
+level = "NO"
+reason = "Repeated words across inline code and prose are intentional."
+
+[rules."write-good.So"]
+level = "NO"
+reason = "Explanatory clauses may open with So."
+
+[rules."Vale.Terms"]
+level = "NO"
+reason = "Tool names appear in both prose and command spans with deliberate case."
+
+[rules."Vale.Spelling"]
+level = "NO"
+reason = "Model identifiers, GitHub handles, and CLI flags evolve dynamically across registries."
+
+[rules."Workloop.American"]
+extends = "substitution"
+level = "error"
+message = "Use '%s' instead of '%s'."
+ignorecase = true
+
+[rules."Workloop.American".swap]
+"behaviour" = "behavior"
+"normalis(e|ed|es|ing)" = "normaliz$1"
+"serialis(e|ed|es|ing)" = "serializ$1"
+"materialis(e|ed|es|ing)" = "materializ$1"
+"initialis(e|ed|es|ing)" = "initializ$1"

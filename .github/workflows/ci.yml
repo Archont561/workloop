@@ -1,0 +1,83 @@
+name: CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  policy-and-tools:
+    name: Policy, Docs & Tools
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: prefix-dev/setup-pixi@v0.9.4
+        with:
+          pixi-version: v0.83.0
+          cache: true
+      - name: Install Bun dependencies
+        run: pixi run --locked bun-install
+      - name: Sync Vale styles and check prose
+        run: |
+          pixi run --locked automation prose_sync
+          pixi run --locked automation lint_prose
+      - name: Structural & policy gates
+        run: |
+          pixi run --locked alint
+          pixi run --locked sandbox-check
+          pixi run --locked automation check_policy
+          pixi run --locked lint-toml
+          pixi run --locked docs-lint
+          pixi run --locked check-links-offline
+          pixi run --locked actionlint
+          pixi run --locked shellcheck scripts/bootstrap.sh scripts/install_hooks.sh .devcontainer/setup.sh
+      - name: Python tools lint, typecheck & >=90% coverage
+        run: |
+          pixi run --locked lint-python
+          pixi run --locked format-python-check
+          pixi run --locked typecheck
+          pixi run --locked test-tools-cov
+      - name: Upload tools coverage to Codecov
+        if: always()
+        uses: codecov/codecov-action@v5
+        with:
+          files: coverage/tools.xml
+          flags: tools
+          fail_ci_if_error: false
+
+  rust:
+    name: Rust Lint, BDD & >=90% Coverage
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: prefix-dev/setup-pixi@v0.9.4
+        with:
+          pixi-version: v0.83.0
+          cache: true
+      - name: Format, Clippy & Cargo Deny
+        run: |
+          pixi run --locked fmt-check
+          pixi run --locked clippy
+          pixi run --locked deny-offline
+      - name: Nextest, Doctests & >=90% Coverage Gate
+        run: |
+          pixi run --locked test-all
+          pixi run --locked coverage
+      - name: Upload Rust coverage to Codecov
+        if: always()
+        uses: codecov/codecov-action@v5
+        with:
+          files: coverage/lcov.info
+          flags: rust
+          fail_ci_if_error: false

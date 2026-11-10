@@ -1,0 +1,42 @@
+{
+  "config": {
+    "default": true,
+    "MD013": false,
+    "MD024": { "siblings_only": true },
+    "MD033": {
+      "allowed_elements": [
+        "p",
+        "h1",
+        "h3",
+        "img",
+        "a",
+        "br",
+        "strong",
+        "em",
+        "details",
+        "summary",
+        "sub",
+        "sup"
+      ]
+    },
+    "MD041": false
+  },
+  "globs": [
+    "README.md",
+    "AGENTS.md",
+    "CONTRIBUTING.md",
+    "CHANGELOG.md",
+    "docs/**/*.md",
+    "crates/*/README.md"
+  ],
+  "ignores": [
+    ".agents/**",
+    ".pixi/**",
+    ".pixi-sandbox/**",
+    ".readme/**",
+    ".vale/**",
+    "backlog/**",
+    "node_modules/**",
+    "target/**"
+  ]
+}

@@ -1,0 +1,18 @@
+exclude = [
+  ".cargo/git/**",
+  ".cargo/registry/**",
+  ".pixi/**",
+  ".pixi-sandbox/**",
+  "node_modules/**",
+  "target/**",
+  "Cargo.lock",
+]
+
+[formatting]
+array_auto_collapse = true
+array_auto_expand = true
+array_trailing_comma = true
+column_width = 100
+indent_string = "  "
+reorder_keys = false
+trailing_newline = true

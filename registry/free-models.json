@@ -1,0 +1,124 @@
+{
+  "schema_version": 1,
+  "updated_at": "2026-11-10",
+  "providers": {
+    "opencode-zen": {
+      "base_url": "https://opencode.ai/zen/v1",
+      "api_key_env": "OPENCODE_API_KEY",
+      "quota_scope": "opencode-zen"
+    },
+    "openrouter-free": {
+      "base_url": "https://openrouter.ai/api/v1",
+      "api_key_env": "OPENROUTER_API_KEY",
+      "quota_scope": "openrouter-free-daily"
+    },
+    "mistral-experiment": {
+      "base_url": "https://api.mistral.ai/v1",
+      "api_key_env": "MISTRAL_API_KEY",
+      "quota_scope": "mistral-experiment"
+    },
+    "google-ai-studio": {
+      "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
+      "api_key_env": "GEMINI_API_KEY",
+      "quota_scope": "google-ai-studio"
+    }
+  },
+  "models": [
+    {
+      "id": "opencode/big-pickle",
+      "provider": "opencode-zen",
+      "upstream_model": "big-pickle",
+      "family": "opencode-zen",
+      "context_window": 200000,
+      "max_output": 128000,
+      "tool_calling": true
+    },
+    {
+      "id": "opencode/minimax-m3.1-flash-free",
+      "provider": "opencode-zen",
+      "upstream_model": "minimax-m3.1-flash-free",
+      "family": "minimax",
+      "context_window": 204800,
+      "max_output": 65536,
+      "tool_calling": true
+    },
+    {
+      "id": "opencode/deepseek-v4.1-flash-free",
+      "provider": "opencode-zen",
+      "upstream_model": "deepseek-v4.1-flash-free",
+      "family": "deepseek",
+      "context_window": 131072,
+      "max_output": 32768,
+      "tool_calling": true
+    },
+    {
+      "id": "opencode/glm-5.3-flash-free",
+      "provider": "opencode-zen",
+      "upstream_model": "glm-5.3-flash-free",
+      "family": "glm",
+      "context_window": 204800,
+      "max_output": 65536,
+      "tool_calling": true
+    },
+    {
+      "id": "openrouter/nvidia/nemotron-3-ultra-550b-a55b:free",
+      "provider": "openrouter-free",
+      "upstream_model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "family": "nemotron",
+      "context_window": 262144,
+      "max_output": 32768,
+      "tool_calling": true
+    },
+    {
+      "id": "openrouter/cohere/north-mini-code:free",
+      "provider": "openrouter-free",
+      "upstream_model": "cohere/north-mini-code:free",
+      "family": "cohere",
+      "context_window": 262144,
+      "max_output": 32768,
+      "tool_calling": true
+    },
+    {
+      "id": "openrouter/free",
+      "provider": "openrouter-free",
+      "upstream_model": "openrouter/free",
+      "family": "openrouter-auto",
+      "context_window": 200000,
+      "max_output": 32768,
+      "tool_calling": true
+    },
+    {
+      "id": "mistral/labs-devstral-small-2512",
+      "provider": "mistral-experiment",
+      "upstream_model": "labs-devstral-small-2512",
+      "family": "mistral",
+      "context_window": 262144,
+      "max_output": 32768,
+      "tool_calling": true
+    },
+    {
+      "id": "google/gemini-2.5-flash",
+      "provider": "google-ai-studio",
+      "upstream_model": "gemini-2.5-flash",
+      "family": "gemini",
+      "context_window": 1048576,
+      "max_output": 65536,
+      "tool_calling": true
+    }
+  ],
+  "default_pools": {
+    "implement": [
+      "opencode/big-pickle",
+      "mistral/labs-devstral-small-2512",
+      "openrouter/nvidia/nemotron-3-ultra-550b-a55b:free",
+      "opencode/minimax-m3.1-flash-free",
+      "openrouter/free"
+    ],
+    "review": [
+      "google/gemini-2.5-flash",
+      "openrouter/cohere/north-mini-code:free",
+      "opencode/deepseek-v4.1-flash-free",
+      "opencode/glm-5.3-flash-free"
+    ]
+  }
+}

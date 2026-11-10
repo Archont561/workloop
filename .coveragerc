@@ -1,0 +1,12 @@
+[run]
+branch = True
+source = tools
+omit =
+    tools/tests/*
+    tools/__init__.py
+    tools/lib/__init__.py
+
+[report]
+show_missing = True
+skip_covered = False
+fail_under = 90
