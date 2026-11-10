@@ -10,4 +10,4 @@ folder under `.agents/skills/` with `SKILL.md`, YAML frontmatter (`name` matchin
 the folder and a meaningful `description`), concise steps and explicit stop
 conditions. Link only to existing references. Keep repository-local skills
 committed and reviewable; do not silently overwrite them via remote restore.
-Run `pixi run --frozen skills-check` and its tests.
+Run `pixi run --locked automation skills_check` and its tests.

@@ -7,22 +7,22 @@ Backlog tasks live as Markdown under `backlog/`. Use the CLI for task metadata s
 
 ## Run the CLI in this workspace
 
-`backlog.md` is a root Bun workspace dependency. Run it through Pixi's separate Bun environment:
+`backlog.md` is a root Bun workspace dependency, exposed through the locked Pixi task. Run every command through it:
 
 ```sh
-pixi run -e bun bunx backlog.md <command>
+pixi run --locked backlog <command>
 ```
 
 Install the locked Bun workspace first if dependencies are missing:
 
 ```sh
-pixi run -e bun install-js
+pixi run --locked bun-install
 ```
 
 The current backlog is initialized at `backlog/config.yml` in filesystem-only mode. If the directory is absent in a fresh checkout, initialize it without Git integration:
 
 ```sh
-pixi run -e bun bunx backlog.md init "QGIS SDK Workspace" --no-git --defaults --integration-mode none --backlog-dir backlog
+pixi run --locked backlog init workloop --no-git --defaults --integration-mode none --backlog-dir backlog
 ```
 
 ## Non-interactive use
@@ -30,9 +30,9 @@ pixi run -e bun bunx backlog.md init "QGIS SDK Workspace" --no-git --defaults --
 Read commands can launch an interactive UI. In an agent or CI shell, always use `--plain` for reads and `--json` when parsing output. Avoid bare `board`, `browser`, or task-detail commands without a non-interactive flag.
 
 ```sh
-pixi run -e bun bunx backlog.md task list -s "To Do" --plain
-pixi run -e bun bunx backlog.md search "<query>" --plain
-pixi run -e bun bunx backlog.md task <id> --plain
+pixi run --locked backlog task list -s "To Do" --plain
+pixi run --locked backlog search "<query>" --plain
+pixi run --locked backlog task <id> --plain
 ```
 
 ## Task workflow
@@ -46,10 +46,10 @@ pixi run -e bun bunx backlog.md task <id> --plain
 Create tasks with the CLI, for example:
 
 ```sh
-pixi run -e bun bunx backlog.md task create "Title" -d "Description" --ac "First,Second" -l area --priority high
+pixi run --locked backlog task create "Title" -d "Description" --ac "First,Second" -l area --priority high
 ```
 
-For command syntax, use `pixi run -e bun bunx backlog.md <command> --help` and consult [`REFERENCE.md`](REFERENCE.md).
+For command syntax, use `pixi run --locked backlog <command> --help` and consult [`REFERENCE.md`](REFERENCE.md).
 
 ## Shell quoting
 

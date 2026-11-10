@@ -44,3 +44,8 @@ Feature: Repository automation and policy tools
     When two task claims run at the same time
     Then the task claimer hands each loop a different card
     And both claimed cards are marked In Progress
+
+  Scenario: Every Pixi task named in agent instructions exists
+    Given the live workloop repository workspace
+    When the documented-task guard inspects the workspace
+    Then the documented-task guard reports zero missing tasks
