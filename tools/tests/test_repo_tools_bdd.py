@@ -365,3 +365,107 @@ def then_rehash_clears(state: RepoState) -> None:
     assert policy.update_skill_hashes(state.workspace) == ["sample"]
     # The fixture declares no REQUIRED_LOCAL_SKILLS, so only drift may be reported.
     assert [p for p in policy.check_skills(state.workspace) if "drifted" in p] == []
+
+
+TWO_PLATFORM_WORKFLOW = "\n".join(
+    [
+        "jobs:",
+        "  conda:",
+        "    strategy:",
+        "      matrix:",
+        "        include:",
+        "          - platform: linux-64",
+        "            os: ubuntu-24.04",
+        "          - platform: osx-arm64",
+        "            os: macos-14",
+        "",
+    ]
+)
+
+
+@given("a temporary workspace with no release workflow", target_fixture="state")
+def given_no_release_workflow(tmp_path: Path) -> RepoState:
+    state = RepoState()
+    state.workspace = tmp_path
+    return state
+
+
+@then("the distribution guard reports the missing workflow")
+def then_missing_workflow(state: RepoState) -> None:
+    assert any("release.yml is missing" in p for p in state.problems), state.problems
+
+
+@given(
+    "a temporary workspace whose release matrix declares no platforms",
+    target_fixture="state",
+)
+def given_empty_matrix(tmp_path: Path) -> RepoState:
+    state = RepoState()
+    state.workspace = _write_release_fixture(
+        tmp_path, workflow="jobs:\n  conda:\n    runs-on: ubuntu-24.04\n", platforms=[]
+    )
+    return state
+
+
+@then("the distribution guard reports an empty release matrix")
+def then_empty_matrix(state: RepoState) -> None:
+    assert any("no conda matrix platforms" in p for p in state.problems), state.problems
+
+
+@given(
+    parsers.parse('a temporary workspace whose recipe pins "{marker}" for a "{platform}" target'),
+    target_fixture="state",
+)
+def given_recipe_pins_unbuilt(marker: str, platform: str, tmp_path: Path) -> RepoState:
+    state = RepoState()
+    state.workspace = _write_release_fixture(
+        tmp_path, workflow=TWO_PLATFORM_WORKFLOW, platforms=["linux-64", "osx-arm64"]
+    )
+    variants = state.workspace / "crates" / "workloop" / "recipe" / "variants.yaml"
+    variants.write_text(
+        "\n".join(
+            [
+                "c_stdlib_version:",
+                "  - if: linux and x86_64",
+                '    then: "2.17"',
+                f"  - if: {marker}",
+                '    then: "11.0"',
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    return state
+
+
+@then(parsers.parse('the distribution guard reports a recipe mismatch for "{platform}"'))
+def then_recipe_mismatch(platform: str, state: RepoState) -> None:
+    assert any(platform in p or "win" in p for p in state.problems), state.problems
+
+
+@given(
+    "a temporary workspace whose recipe omits the variant pin for osx-arm64",
+    target_fixture="state",
+)
+def given_missing_variant_pin(tmp_path: Path) -> RepoState:
+    state = RepoState()
+    state.workspace = _write_release_fixture(
+        tmp_path, workflow=TWO_PLATFORM_WORKFLOW, platforms=["linux-64", "osx-arm64"]
+    )
+    return state
+
+
+@then("the distribution guard reports a missing variant pin")
+def then_missing_variant_pin(state: RepoState) -> None:
+    assert any("no `c_stdlib_version` for osx-arm64" in p for p in state.problems), state.problems
+
+
+@given("a temporary workspace with only a release workflow", target_fixture="state")
+def given_only_workflow(tmp_path: Path) -> RepoState:
+    (tmp_path / ".github" / "workflows").mkdir(parents=True)
+    (tmp_path / ".github" / "workflows" / "release.yml").write_text(
+        TWO_PLATFORM_WORKFLOW, encoding="utf-8"
+    )
+    state = RepoState()
+    state.workspace = tmp_path
+    return state

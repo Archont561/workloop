@@ -70,3 +70,34 @@ Feature: Repository automation and policy tools
     When the skill folder is edited but skills-lock.json is not
     Then the skills guard reports drift for that skill
     And rehashing the lock clears the drift
+
+  Scenario: Reject a workspace with no release workflow
+    Given a temporary workspace with no release workflow
+    When the distribution guard inspects that temporary workspace
+    Then the distribution guard reports the missing workflow
+
+  Scenario: Reject a release matrix with no platforms
+    Given a temporary workspace whose release matrix declares no platforms
+    When the distribution guard inspects that temporary workspace
+    Then the distribution guard reports an empty release matrix
+
+  Scenario Outline: Reject a recipe that disagrees with the release matrix
+    Given a temporary workspace whose recipe pins "<marker>" for a "<platform>" target
+    When the distribution guard inspects that temporary workspace
+    Then the distribution guard reports a recipe mismatch for "<platform>"
+
+    Examples:
+      | marker            | platform     |
+      | win               | win-64       |
+      | osx and x86_64    | osx-64       |
+      | linux and aarch64 | linux-aarch64 |
+
+  Scenario: Reject a shipped platform with no variant pin
+    Given a temporary workspace whose recipe omits the variant pin for osx-arm64
+    When the distribution guard inspects that temporary workspace
+    Then the distribution guard reports a missing variant pin
+
+  Scenario: Accept a minimal workspace that declares no Pixi packaging or recipe
+    Given a temporary workspace with only a release workflow
+    When the distribution guard inspects that temporary workspace
+    Then the distribution guard reports zero problems
