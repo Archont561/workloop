@@ -18,9 +18,20 @@ coverage:
         paths:
           - "tools/"
     patch:
-      default:
+      # Per-flag rather than a single `default`: the two flags upload as separate
+      # reports, so a patch status without `flags` sees only the rust upload and
+      # scores the tools-only change against the Rust line count.
+      default: false
+      rust:
         target: 90%
         threshold: 0%
+        flags:
+          - rust
+      tools:
+        target: 90%
+        threshold: 0%
+        flags:
+          - tools
 
 flags:
   rust:
