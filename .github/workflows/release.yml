@@ -1,0 +1,59 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Build Conda and PyPI artifacts without publishing"
+        required: false
+        default: true
+        type: boolean
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  conda:
+    name: Build & Publish Conda (${{ matrix.platform }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: linux-64
+            os: ubuntu-24.04
+          - platform: osx-arm64
+            os: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: prefix-dev/setup-pixi@v0.9.4
+        with:
+          pixi-version: v0.83.0
+          environments: packaging
+      - name: Build Conda package via rattler-build
+        run: pixi run -e packaging --locked package
+      - name: Publish to prefix.dev/archont561/archont561
+        if: startsWith(github.ref, 'refs/tags/v') && inputs.dry_run != true
+        env:
+          RATTLER_AUTH_TOKEN: ${{ secrets.PREFIX_DEV_TOKEN }}
+        run: |
+          pixi exec --spec rattler-build -- rattler-build upload prefix \
+            --channel archont561 \
+            --api-key "${RATTLER_AUTH_TOKEN}" \
+            output/**/*.conda
+
+  pypi:
+    name: Build Wheel & Source Distribution
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: prefix-dev/setup-pixi@v0.9.4
+        with:
+          pixi-version: v0.83.0
+          environments: pypi
+      - name: Build wheel and sdist via maturin
+        run: pixi run -e pypi --locked package-pypi
