@@ -106,6 +106,26 @@ key stays in the parent process, the child receives a placeholder, and an
 upstream `429` triggers rotation to another pool entry instead of ending the
 node.
 
+## Provider support for the proxy
+
+Archon injects node and codebase environment variables into a provider only when
+that provider declares support for it, and it warns instead of failing when a
+provider does not. This decides whether an Archon agent node can reach
+`workloop`'s localhost proxy directly.
+
+| Archon provider | Injects environment | Route to the proxy |
+| --- | --- | --- |
+| Claude | yes | through `workloop exec`, which owns the child environment |
+| Codex | yes | through `workloop exec` |
+| Pi | yes | through `workloop exec`, or a custom provider in `models.json` |
+| OpenCode | no | `workloop exec` only. Archon refuses `baseUrl` for this provider |
+| Copilot | yes | through `workloop exec` |
+
+The practical reading is that the proxy is reached by **wrapping the agent
+command**, which is what `workloop exec` does, and not by configuring a base URL
+inside Archon. That keeps the boundary in one place: Archon never learns a
+provider URL, and `workloop` never learns an Archon path.
+
 ## Four rules that keep the layers apart
 
 1. **One retry loop.** Do not point Archon's `until_bash` at the same commands
@@ -160,10 +180,15 @@ pixi run --locked backlog task list --plain
   reserve a container backend, but only the worktree provider is implemented
   today. For a sandboxed runtime, run `workloop` inside a restored
   `pixi-sandbox` environment.
-- **Provider passthrough is unverified.** Whether Archon's OpenCode and Pi
-  providers accept a custom `OPENAI_BASE_URL` is untested here. If they do,
-  Archon's own agent nodes can use the proxy directly and `workloop exec` is
-  unnecessary. Verify before relying on it.
+- **Archon refuses a base URL on its OpenCode provider.** A changelog entry for
+  `assistants.opencode.baseUrl` records that every OpenCode run already rejected
+  that key, so pointing Archon's OpenCode node at a localhost proxy is not
+  supported. Use `workloop exec`, which sets the proxy URL for the child
+  process, instead of configuring a base URL in Archon.
+- **Environment injection varies by provider.** Archon injects configured
+  environment variables only where the provider declares that it supports them,
+  and its OpenCode provider declares no support. The table above is read from
+  Archon's provider sources, so check it again after an upgrade.
 
 ## See also
 
@@ -173,3 +198,5 @@ pixi run --locked backlog task list --plain
   behavior and hook names.
 - [Pixi task catalog](../reference/pixi-tasks.md) — the locked commands used in
   hooks.
+- `decision-6` under `backlog/decisions/` records the binding stance: Archon is
+  a supported supervisor, never a dependency.
