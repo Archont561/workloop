@@ -331,3 +331,31 @@ def test_claim_rewrites_only_the_status_line(tmp_path: Path) -> None:
     assert card.read_text(encoding="utf-8") == original.replace(
         "status: To Do", "status: In Progress"
     )
+
+
+def test_documented_command_guard_catches_unknown_tasks(tmp_path: Path) -> None:
+    (tmp_path / "tools").mkdir()
+    (tmp_path / "tools" / "dodo.py").write_text(
+        "def task_skills_check() -> dict:\n    return {}\n", encoding="utf-8"
+    )
+    (tmp_path / "pixi.toml").write_text(
+        '[tasks]\nbacklog = "bun x backlog"\nautomation = "doit"\n'
+        '[feature.dev.tasks]\nfmt-check = "cargo fmt"\n',
+        encoding="utf-8",
+    )
+    skill = tmp_path / ".agents" / "skills" / "backlog" / "SKILL.md"
+    skill.parent.mkdir(parents=True)
+    skill.write_text(
+        "pixi run --locked backlog task list\n"
+        "pixi run -e bun bunx backlog.md\n"
+        "pixi run --locked automation skills_check\n"
+        "pixi run --locked automation missing_task\n",
+        encoding="utf-8",
+    )
+
+    problems = policy.check_documented_commands(tmp_path)
+
+    assert len(problems) == 2, problems
+    assert any("pixi task 'bunx'" in problem for problem in problems)
+    assert any("doit task 'missing_task'" in problem for problem in problems)
+    assert policy.main(["commands", "--root", str(tmp_path)]) == 1

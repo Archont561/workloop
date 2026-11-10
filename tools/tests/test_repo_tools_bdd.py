@@ -238,3 +238,13 @@ def then_both_claimed(state: RepoState) -> None:
         if line.startswith("status:")
     ]
     assert statuses == ["status: In Progress", "status: In Progress"]
+
+
+@when("the documented-task guard inspects the workspace")
+def when_documented_task_guard(state: RepoState, repo_root: Path) -> None:
+    state.problems = policy.check_documented_commands(repo_root)
+
+
+@then("the documented-task guard reports zero missing tasks")
+def then_no_missing_tasks(state: RepoState) -> None:
+    assert state.problems == []

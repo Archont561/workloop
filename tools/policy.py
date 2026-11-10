@@ -250,6 +250,59 @@ def check_advisory_exception(root: Path) -> list[str]:
     return problems
 
 
+# Every `pixi run … <task>` invocation in the files agents read at load time. Skills are
+# edited by hand but must stay executable: a documented task that does not exist is a wall,
+# not a typo, because an agent follows the instruction literally and fails deterministically.
+DOCUMENTED_COMMAND_SOURCES = (
+    ".agents/skills/backlog/SKILL.md",
+    ".agents/skills/backlog/REFERENCE.md",
+    ".agents/skills/session/SKILL.md",
+    ".agents/skills/skill-creator/SKILL.md",
+)
+# `pixi run -e <env>` and `--frozen/--locked` wrappers are stripped before the task name.
+PIXI_TASK_RE = re.compile(
+    r"pixi run (?:(?:--locked|--frozen|-e \w+) +)*([a-z][\w-]*)",
+)
+# Subcommands of `doit`, resolved against `tools/dodo.py` task functions.
+DOIT_TASK_RE = re.compile(r"automation ([a-z_]+)")
+
+
+def _declared_pixi_tasks(root: Path) -> set[str]:
+    """Collect every task name declared in `pixi.toml`, including feature tasks."""
+    manifest = tomllib.loads((root / "pixi.toml").read_text(encoding="utf-8"))
+    declared = set(manifest.get("tasks", {}))
+    for feature in manifest.get("feature", {}).values():
+        declared |= set(feature.get("tasks", {}))
+    return declared
+
+
+def _declared_doit_tasks(root: Path) -> set[str]:
+    """Collect every `task_*` factory name defined in `tools/dodo.py`."""
+    dodo = (root / "tools" / "dodo.py").read_text(encoding="utf-8")
+    return set(re.findall(r"^def task_(\w+)\(", dodo, re.MULTILINE))
+
+
+def check_documented_commands(root: Path) -> list[str]:
+    """Fail when agent-facing instructions name a Pixi or doit task that does not exist."""
+    problems: list[str] = []
+    pixi_tasks = _declared_pixi_tasks(root)
+    doit_tasks = _declared_doit_tasks(root)
+    for relative in DOCUMENTED_COMMAND_SOURCES:
+        path = root / relative
+        if not path.is_file():
+            continue
+        text = path.read_text(encoding="utf-8")
+        problems.extend(
+            f"{relative}: documents missing pixi task {task!r}"
+            for task in sorted({m.group(1) for m in PIXI_TASK_RE.finditer(text)} - pixi_tasks)
+        )
+        problems.extend(
+            f"{relative}: documents missing doit task {task!r}"
+            for task in sorted({m.group(1) for m in DOIT_TASK_RE.finditer(text)} - doit_tasks)
+        )
+    return problems
+
+
 def check_repo_invariants(root: Path) -> list[str]:
     """Verify structural invariants expected alongside `.alint.yml`."""
     problems: list[str] = []
@@ -278,6 +331,7 @@ def run_all_policy_checks(root: Path) -> list[str]:
         *check_registry(root),
         *check_packages(root),
         *check_advisory_exception(root),
+        *check_documented_commands(root),
     ]
 
 
@@ -287,7 +341,16 @@ def main(argv: list[str] | None = None) -> int:
         "check",
         nargs="?",
         default="all",
-        choices=("all", "repo", "skills", "backlog", "registry", "packages", "advisory"),
+        choices=(
+            "all",
+            "repo",
+            "skills",
+            "backlog",
+            "registry",
+            "packages",
+            "advisory",
+            "commands",
+        ),
     )
     parser.add_argument("--root", type=Path, default=Path.cwd())
     args = parser.parse_args(argv)
@@ -300,6 +363,7 @@ def main(argv: list[str] | None = None) -> int:
         "registry": check_registry,
         "packages": check_packages,
         "advisory": check_advisory_exception,
+        "commands": check_documented_commands,
     }
     problems = dispatch[args.check](args.root)
     if problems:
