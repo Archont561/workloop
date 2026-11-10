@@ -49,7 +49,7 @@ jobs:
           pixi run --locked test-tools-cov
       - name: Upload tools coverage to Codecov
         if: always()
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v7
         with:
           files: coverage/tools.xml
           flags: tools
@@ -76,7 +76,7 @@ jobs:
           pixi run --locked coverage
       - name: Upload Rust coverage to Codecov
         if: always()
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v7
         with:
           files: coverage/lcov.info
           flags: rust
