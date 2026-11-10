@@ -1,4 +1,7 @@
 # Authored sandbox policy. Workflows and scripts/restore.sh are generated from it via `pixi-sandbox init`.
+# Publication trigger: `publish-sandbox.yml` runs on changes to this file, so touching it
+# re-publishes the airlock branch after repository-only changes (docs, tooling) that the
+# path filter would otherwise ignore.
 schema = 1
 branch_prefix = "sandbox"
 cargo_vendor = true
