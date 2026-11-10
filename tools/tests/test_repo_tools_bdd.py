@@ -248,3 +248,120 @@ def when_documented_task_guard(state: RepoState, repo_root: Path) -> None:
 @then("the documented-task guard reports zero missing tasks")
 def then_no_missing_tasks(state: RepoState) -> None:
     assert state.problems == []
+
+
+@when("the distribution guard inspects the workspace")
+def when_distribution_guard(state: RepoState, repo_root: Path) -> None:
+    state.problems = policy.check_distribution(repo_root)
+
+
+@when("the distribution guard inspects that temporary workspace")
+def when_distribution_guard_temp(state: RepoState) -> None:
+    assert state.workspace is not None
+    state.problems = policy.check_distribution(state.workspace)
+
+
+@then("the distribution guard reports zero problems")
+def then_distribution_clean(state: RepoState) -> None:
+    assert state.problems == []
+
+
+def _write_release_fixture(base: Path, *, workflow: str, platforms: list[str]) -> Path:
+    """Build the minimum tree `check_distribution` inspects."""
+    (base / ".github" / "workflows").mkdir(parents=True)
+    (base / ".github" / "workflows" / "release.yml").write_text(workflow, encoding="utf-8")
+    listed = ", ".join(f'"{p}"' for p in platforms)
+    (base / "pixi.toml").write_text(
+        "\n".join(["[feature.packaging]", f"platforms = [{listed}]", ""]), encoding="utf-8"
+    )
+    recipe = base / "crates" / "workloop" / "recipe"
+    recipe.mkdir(parents=True)
+    (recipe / "variants.yaml").write_text(
+        "\n".join(["c_stdlib_version:", "  - if: linux and x86_64", '    then: "2.17"', ""]),
+        encoding="utf-8",
+    )
+    return base
+
+
+BLESSED_WORKFLOW = "\n".join(
+    [
+        "jobs:",
+        "  conda:",
+        "    strategy:",
+        "      matrix:",
+        "        include:",
+        "          - platform: linux-64",
+        "            os: ubuntu-24.04",
+        "",
+    ]
+)
+
+
+@given(
+    'a temporary workspace whose release workflow runs "cargo publish"',
+    target_fixture="state",
+)
+def given_workflow_uses_cargo_publish(tmp_path: Path) -> RepoState:
+    workflow = BLESSED_WORKFLOW + "      - run: cargo publish -p workloop\n"
+    state = RepoState()
+    state.workspace = _write_release_fixture(tmp_path, workflow=workflow, platforms=["linux-64"])
+    return state
+
+
+@given(
+    'a temporary workspace whose packaging platforms include "win-64"',
+    target_fixture="state",
+)
+def given_unsupported_packaging_platform(tmp_path: Path) -> RepoState:
+    state = RepoState()
+    state.workspace = _write_release_fixture(
+        tmp_path, workflow=BLESSED_WORKFLOW, platforms=["linux-64", "win-64"]
+    )
+    return state
+
+
+@then("the distribution guard reports a crates.io publication violation")
+def then_crates_violation(state: RepoState) -> None:
+    assert any("crate registry" in problem for problem in state.problems), state.problems
+
+
+@then("the distribution guard reports a platform mismatch")
+def then_platform_mismatch(state: RepoState) -> None:
+    assert any("do not match the release matrix" in p for p in state.problems), state.problems
+
+
+@given("a temporary workspace with one locked skill", target_fixture="state")
+def given_locked_skill(tmp_path: Path) -> RepoState:
+    skill = tmp_path / ".agents" / "skills" / "sample"
+    skill.mkdir(parents=True)
+    (skill / "SKILL.md").write_text(
+        "\n".join(["---", "name: sample", "description: A sample skill.", "---", "", "Body."]),
+        encoding="utf-8",
+    )
+    digest = policy.compute_skill_folder_hash(skill)
+    lock = {"version": 1, "skills": {"sample": {"computedHash": digest}}}
+    (tmp_path / "skills-lock.json").write_text(json.dumps(lock), encoding="utf-8")
+    state = RepoState()
+    state.workspace = tmp_path
+    return state
+
+
+@when("the skill folder is edited but skills-lock.json is not")
+def when_skill_edited(state: RepoState) -> None:
+    assert state.workspace is not None
+    skill_md = state.workspace / ".agents" / "skills" / "sample" / "SKILL.md"
+    skill_md.write_text(skill_md.read_text(encoding="utf-8") + "\nDrift.\n", encoding="utf-8")
+    state.problems = policy.check_skills(state.workspace)
+
+
+@then("the skills guard reports drift for that skill")
+def then_drift_reported(state: RepoState) -> None:
+    assert any("drifted from skills-lock.json" in p for p in state.problems), state.problems
+
+
+@then("rehashing the lock clears the drift")
+def then_rehash_clears(state: RepoState) -> None:
+    assert state.workspace is not None
+    assert policy.update_skill_hashes(state.workspace) == ["sample"]
+    # The fixture declares no REQUIRED_LOCAL_SKILLS, so only drift may be reported.
+    assert [p for p in policy.check_skills(state.workspace) if "drifted" in p] == []

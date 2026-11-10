@@ -34,12 +34,24 @@ def parse_frontmatter(text: str) -> dict[str, str]:
 
 
 def compute_skill_folder_hash(skill_dir: Path) -> str:
-    """Compute a deterministic SHA-256 digest of files inside a skill folder."""
+    """Compute the digest `skills-lock.json` stores for an installed skill folder.
+
+    This mirrors the `skills` CLI exactly (`computeSkillFolderHash` in
+    `skills@1.7.6`): files are ordered by relative path, `.git` and
+    `node_modules` are skipped, and the hash is fed the relative path bytes
+    immediately followed by the file content bytes. There is no separator, so
+    adding one here would silently disagree with the installer.
+    """
+    files = [
+        (path.relative_to(skill_dir).as_posix(), path)
+        for path in skill_dir.rglob("*")
+        if path.is_file() and not {".git", "node_modules"} & set(path.relative_to(skill_dir).parts)
+    ]
+    files.sort(key=lambda entry: entry[0])
     hasher = hashlib.sha256()
-    for path in sorted(p for p in skill_dir.rglob("*") if p.is_file()):
-        rel = path.relative_to(skill_dir).as_posix()
-        hasher.update(rel.encode("utf-8") + b"\0")
-        hasher.update(path.read_bytes() + b"\0")
+    for relative, path in files:
+        hasher.update(relative.encode("utf-8"))
+        hasher.update(path.read_bytes())
     return hasher.hexdigest()
 
 
@@ -82,8 +94,42 @@ def check_skills(root: Path) -> list[str]:
             problems.append(
                 f".agents/skills/{skill_name}/SKILL.md must declare `name` and `description`"
             )
+        # A locked skill is byte-fingerprinted by the installer. Reflect that: a local edit either
+        # updates the lock deliberately or is reported as drift, so the field is never decorative.
+        locked = locked_skills.get(skill_name) if isinstance(locked_skills, dict) else None
+        if not isinstance(locked, dict) or not locked.get("computedHash"):
+            continue
+        actual = compute_skill_folder_hash(skills_root / skill_name)
+        if actual != locked["computedHash"]:
+            problems.append(
+                f".agents/skills/{skill_name} drifted from skills-lock.json "
+                f"(expected {locked['computedHash'][:12]}, found {actual[:12]}); "
+                "update computedHash in the same change as the edit"
+            )
 
     return problems
+
+
+def update_skill_hashes(root: Path) -> list[str]:
+    """Rewrite `computedHash` for every locked skill from the folder on disk.
+
+    This is the sanctioned path after editing a skill: run it, review the diff it
+    produces, and commit the lock beside the edit. It returns the skill names whose
+    hash changed, so a caller can report what it touched.
+    """
+    lock_path = root / "skills-lock.json"
+    lock_data = json.loads(lock_path.read_text(encoding="utf-8"))
+    changed: list[str] = []
+    for skill_name, entry in sorted(lock_data.get("skills", {}).items()):
+        skill_dir = root / ".agents" / "skills" / skill_name
+        if not skill_dir.is_dir() or not isinstance(entry, dict):
+            continue
+        digest = compute_skill_folder_hash(skill_dir)
+        if entry.get("computedHash") != digest:
+            entry["computedHash"] = digest
+            changed.append(skill_name)
+    lock_path.write_text(json.dumps(lock_data, indent=2) + "\n", encoding="utf-8")
+    return changed
 
 
 def check_backlog_status(backlog_dir: Path) -> list[str]:
@@ -322,6 +368,60 @@ def check_repo_invariants(root: Path) -> list[str]:
     return problems
 
 
+RELEASE_WORKFLOW = Path(".github/workflows/release.yml")
+
+
+def check_distribution(root: Path) -> list[str]:
+    """Keep the declared distribution channels and platforms honest.
+
+    Two independent claims are checked, each asserted by a superseding record:
+    `decision-7` (no crates.io publication) and `decision-8` (the recipe, the
+    `pixi` packaging platforms, and the release matrix name the same targets).
+    """
+    problems: list[str] = []
+    workflow = root / RELEASE_WORKFLOW
+    if not workflow.is_file():
+        return [f"{RELEASE_WORKFLOW} is missing"]
+
+    workflow_text = workflow.read_text(encoding="utf-8")
+    if "cargo publish" in workflow_text:
+        problems.append(
+            f"{RELEASE_WORKFLOW} publishes to a crate registry; decision-7 keeps "
+            "distribution to Conda and PyPI"
+        )
+
+    # Platforms actually built: `- platform: <name>` entries in the conda matrix.
+    built = set(re.findall(r"^\s*-\s*platform:\s*(\S+)\s*$", workflow_text, re.MULTILINE))
+    if not built:
+        problems.append(f"{RELEASE_WORKFLOW} declares no conda matrix platforms")
+
+    pixi_cfg = root / "pixi.toml"
+    if pixi_cfg.is_file():
+        features = tomllib.loads(pixi_cfg.read_text(encoding="utf-8")).get("feature", {})
+        declared = set(features.get("packaging", {}).get("platforms", []))
+        if declared != built:
+            problems.append(
+                "pixi.toml [feature.packaging] platforms "
+                f"{sorted(declared)} do not match the release matrix {sorted(built)}"
+            )
+
+    variants = root / "crates/workloop/recipe/variants.yaml"
+    if variants.is_file():
+        variant_text = variants.read_text(encoding="utf-8")
+        for combo, platform in (("linux and x86_64", "linux-64"), ("osx and arm64", "osx-arm64")):
+            if platform in built and combo not in variant_text:
+                problems.append(f"variants.yaml has no `c_stdlib_version` for {platform} ({combo})")
+        unsupported = {"aarch64": "linux-aarch64", "osx and x86_64": "osx-64"}
+        for marker, platform in unsupported.items():
+            if platform not in built and marker in variant_text:
+                problems.append(
+                    f"variants.yaml pins {marker} but {platform} is not built (decision-8)"
+                )
+        if "win" in variant_text.split("c_stdlib_version", 1)[-1]:
+            problems.append("variants.yaml pins win, which the release matrix does not build")
+    return problems
+
+
 def run_all_policy_checks(root: Path) -> list[str]:
     """Run every repository policy check and return any findings."""
     return [
@@ -332,6 +432,7 @@ def run_all_policy_checks(root: Path) -> list[str]:
         *check_packages(root),
         *check_advisory_exception(root),
         *check_documented_commands(root),
+        *check_distribution(root),
     ]
 
 
@@ -350,6 +451,7 @@ def main(argv: list[str] | None = None) -> int:
             "packages",
             "advisory",
             "commands",
+            "distribution",
         ),
     )
     parser.add_argument("--root", type=Path, default=Path.cwd())
@@ -364,6 +466,7 @@ def main(argv: list[str] | None = None) -> int:
         "packages": check_packages,
         "advisory": check_advisory_exception,
         "commands": check_documented_commands,
+        "distribution": check_distribution,
     }
     problems = dispatch[args.check](args.root)
     if problems:
