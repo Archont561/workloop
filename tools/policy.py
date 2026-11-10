@@ -13,6 +13,8 @@ from pathlib import Path
 
 REQUIRED_LOCAL_SKILLS = frozenset({"session", "regain-direction"})
 CANONICAL_STATUSES = frozenset({"To Do", "In Progress", "Done"})
+# The complete `[advisories]` surface `cargo-audit` accepts in `.cargo/audit.toml`.
+AUDIT_ADVISORY_KEYS = frozenset({"ignore", "informational_warnings", "severity_threshold"})
 UNCHECKED_AC_RE = re.compile(r"^\s*-\s*\[\s\]\s+", re.MULTILINE)
 FRONTMATTER_RE = re.compile(r"^---\n(.*?)\n---\n", re.DOTALL)
 
@@ -212,6 +214,19 @@ def check_advisory_exception(root: Path) -> list[str]:
     problems: list[str] = []
     deny_data = tomllib.loads((root / "deny.toml").read_text(encoding="utf-8"))
     audit_data = tomllib.loads((root / ".cargo" / "audit.toml").read_text(encoding="utf-8"))
+
+    # `cargo-audit` parses `.cargo/audit.toml` strictly and aborts the Security job on any key
+    # it does not know, while `cargo-deny` happily tolerates the same file. The two tools also
+    # spell their shared options differently (`audit.ignore` is a string list of advisory ids,
+    # `deny.advisories.ignore` a list of tables), so only the keys below may reach the audit
+    # file: everything yanked-, severity- or scope-related belongs in `deny.toml` alone.
+    audit_advisories = audit_data.get("advisories", {})
+    unexpected_keys = sorted(set(audit_advisories) - AUDIT_ADVISORY_KEYS)
+    if unexpected_keys:
+        problems.append(
+            "cargo-audit rejects unknown `.cargo/audit.toml` advisories keys: "
+            f"{unexpected_keys} (expected a subset of {sorted(AUDIT_ADVISORY_KEYS)})"
+        )
 
     deny_ids = {
         entry["id"] if isinstance(entry, dict) else str(entry)

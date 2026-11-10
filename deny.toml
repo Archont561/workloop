@@ -10,12 +10,16 @@ targets = [
 
 [advisories]
 version = 2
+# Yanked-crate policy is enforced here only: `cargo-audit` has no equivalent key and
+# rejects `.cargo/audit.toml` outright when one is added there.
 yanked = "deny"
-# Temporary dev-only exception while rstest-bdd =0.6.0 pulls rand 0.9.3 via
-# step-table -> cucumber -> rand. Remove as soon as rstest-bdd moves to rand >=0.9.4
-# or drops the dependency; verified non-runtime by tools/check_advisory_exception.py.
+# Dev-only exception: RUSTSEC-2026-0374 marks basic-toml 0.1.10 unmaintained, and
+# rstest-bdd =0.6.0 still reaches it through i18n-embed -> i18n-embed-impl ->
+# i18n-config -> basic-toml. Removable once rstest-bdd stops depending on
+# basic-toml; the non-runtime claim is re-verified by `pixi run automation
+# advisory_exception` (tools/policy.py).
 ignore = [
-  { id = "RUSTSEC-2026-0374", reason = "dev-only transitive via rstest-bdd =0.6.0 -> cucumber -> rand 0.9.3; workloop and workloop-core do not depend on rand at runtime" },
+  { id = "RUSTSEC-2026-0374", reason = "dev-only transitive via rstest-bdd =0.6.0 -> i18n-embed -> i18n-config -> basic-toml; workloop and workloop-core never link basic-toml at runtime" },
 ]
 
 [licenses]

@@ -249,3 +249,24 @@ def test_dodo_task_factories_expose_actions() -> None:
     for factory in task_funcs:
         spec = factory()
         assert "actions" in spec
+
+
+def _write_audit_workspace(root: Path, *, audit_advisories: str, deny_ignore: str) -> None:
+    (root / "deny.toml").write_text(f"[advisories]\nignore = [{deny_ignore}]\n", encoding="utf-8")
+    (root / ".cargo").mkdir()
+    (root / ".cargo" / "audit.toml").write_text(
+        f"[advisories]\n{audit_advisories}\n", encoding="utf-8"
+    )
+
+
+def test_advisory_guard_flags_drift_between_the_two_files(tmp_path: Path) -> None:
+    _write_audit_workspace(
+        tmp_path,
+        audit_advisories='ignore = ["RUSTSEC-0000-0002"]',
+        deny_ignore='{ id = "RUSTSEC-0000-0001" }',
+    )
+
+    problems = policy.check_advisory_exception(tmp_path)
+
+    assert any("advisory ignore mismatch" in problem for problem in problems)
+    assert policy.main(["advisory", "--root", str(tmp_path)]) == 1

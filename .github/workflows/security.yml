@@ -33,11 +33,5 @@ jobs:
         run: pixi run --locked automation advisory_exception
       - name: Run cargo-deny and cargo-audit
         run: |
-          set -o pipefail
-          report() {
-            grep -E "error|warning|yanked|unmaintained" "$1" | head -20 | while IFS= read -r line; do
-              echo "::error title=advisory-diag::$line"
-            done
-          }
-          pixi run --locked deny >deny.log 2>&1 || { report deny.log; exit 1; }
-          pixi run --locked audit >audit.log 2>&1 || { report audit.log; exit 1; }
+          pixi run --locked deny
+          pixi run --locked audit

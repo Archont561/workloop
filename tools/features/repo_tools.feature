@@ -28,3 +28,13 @@ Feature: Repository automation and policy tools
     Given a temporary registry where implement and review share family "gemini"
     When the registry validator inspects that temporary workspace
     Then the registry validator reports a distinct-family violation
+
+  Scenario: Reject an advisory ignore list cargo-audit cannot parse
+    Given a temporary workspace whose audit config carries the unknown "yanked" key
+    When the advisory exception guard validates that workspace
+    Then the advisory exception guard reports a parse error
+
+  Scenario: Accept an advisory ignore list shared by cargo-deny and cargo-audit
+    Given a temporary workspace whose audit config matches deny.toml exactly
+    When the advisory exception guard validates that workspace
+    Then the advisory exception guard reports zero problems

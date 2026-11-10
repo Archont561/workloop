@@ -147,3 +147,46 @@ def when_registry_temp(state: RepoState) -> None:
 @then("the registry validator reports a distinct-family violation")
 def then_registry_family_violation(state: RepoState) -> None:
     assert any("distinct model families" in p for p in state.problems)
+
+
+def _write_audit_fixture(base: Path, *, advisories: str, deny_ignore: str) -> None:
+    base.mkdir(parents=True, exist_ok=True)
+    (base / "deny.toml").write_text(f"[advisories]\nignore = [{deny_ignore}]\n", encoding="utf-8")
+    (base / ".cargo").mkdir()
+    (base / ".cargo" / "audit.toml").write_text(f"[advisories]\n{advisories}\n", encoding="utf-8")
+
+
+@given('a temporary workspace whose audit config carries the unknown "yanked" key')
+def given_audit_with_yanked_key(state: RepoState, tmp_path: Path) -> None:
+    _write_audit_fixture(
+        tmp_path,
+        advisories='yanked = "deny"\nignore = ["RUSTSEC-0000-0001"]',
+        deny_ignore='{ id = "RUSTSEC-0000-0001" }',
+    )
+    state.workspace = tmp_path
+
+
+@given("a temporary workspace whose audit config matches deny.toml exactly")
+def given_audit_matching_deny(state: RepoState, tmp_path: Path) -> None:
+    _write_audit_fixture(
+        tmp_path,
+        advisories='ignore = ["RUSTSEC-0000-0001"]',
+        deny_ignore='{ id = "RUSTSEC-0000-0001" }',
+    )
+    state.workspace = tmp_path
+
+
+@when("the advisory exception guard validates that workspace")
+def when_advisory_guard_runs(state: RepoState) -> None:
+    assert state.workspace is not None
+    state.problems = policy.check_advisory_exception(state.workspace)
+
+
+@then("the advisory exception guard reports a parse error")
+def then_advisory_parse_error(state: RepoState) -> None:
+    assert any("cargo-audit rejects unknown" in problem for problem in state.problems)
+
+
+@then("the advisory exception guard reports zero problems")
+def then_advisory_clean(state: RepoState) -> None:
+    assert state.problems == []
