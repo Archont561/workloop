@@ -1,0 +1,6 @@
+[advisories]
+informational_warnings = ["unmaintained", "unsound", "notice"]
+yanked = "deny"
+# Temporary dev-only exception; kept in sync with deny.toml and verified
+# non-runtime by tools/check_advisory_exception.py.
+ignore = ["RUSTSEC-2026-0374"]

@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Backlog & Architecture Decisions
+    url: https://github.com/Archont561/workloop/tree/main/backlog
+    about: Review existing ADRs, milestones, and active tasks before opening a proposal.

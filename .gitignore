@@ -1,0 +1,47 @@
+# Pixi & sandbox environments
+/.pixi/
+/.pixi-sandbox/
+/.cargo/registry/
+/.cargo/git/
+/.cargo/.package-cache*
+/.cargo/.global-cache
+
+# Cargo & Conda build artifacts
+/target/
+/output/
+/dist/
+/build/
+/npm/
+*.conda
+*.whl
+/*.zip
+
+# Node / Bun tooling
+/node_modules/
+
+# Python caches, test outputs & coverage
+__pycache__/
+*.py[cod]
+*.egg-info/
+/.pytest_cache/
+/.ruff_cache/
+/.mypy_cache/
+/coverage/
+/.coverage
+/coverage.xml
+
+# Workloop runtime state & scratch files
+/.workloop/
+/AGENTS.generated.md
+/.doit.db*
+.DS_Store
+
+# Sandbox home-directory caches
+/.bashrc
+/.bash_logout
+/.profile
+/.bun/
+/.npm/
+/.cache/
+/.config/
+/.local/

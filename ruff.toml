@@ -1,0 +1,30 @@
+target-version = "py311"
+line-length = 100
+src = ["tools"]
+
+[lint]
+select = [
+  "A",
+  "B",
+  "C4",
+  "E",
+  "F",
+  "FURB",
+  "I",
+  "PERF",
+  "PIE",
+  "PT",
+  "PTH",
+  "RET",
+  "RUF",
+  "SIM",
+  "UP",
+  "W",
+]
+
+[lint.per-file-ignores]
+"tools/tests/**" = ["PT011"]
+
+[format]
+quote-style = "double"
+indent-style = "space"

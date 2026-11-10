@@ -1,0 +1,38 @@
+coverage:
+  status:
+    project:
+      default: false
+      rust:
+        target: 90%
+        threshold: 0%
+        flags:
+          - rust
+        paths:
+          - "crates/workloop/src/"
+          - "crates/workloop-core/src/"
+      tools:
+        target: 90%
+        threshold: 0%
+        flags:
+          - tools
+        paths:
+          - "tools/"
+    patch:
+      default:
+        target: 90%
+        threshold: 0%
+
+flags:
+  rust:
+    paths:
+      - "crates/workloop/src/"
+      - "crates/workloop-core/src/"
+    carryforward: true
+  tools:
+    paths:
+      - "tools/"
+    carryforward: true
+
+ignore:
+  - "**/tests/**"
+  - "**/features/**"

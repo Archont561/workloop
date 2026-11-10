@@ -1,0 +1,375 @@
+# yaml-language-server: $schema=https://alint.org/_alint/configuration/schema.json
+version: 1
+
+rules:
+  - id: require-license
+    kind: file_exists
+    paths: LICENSE
+    level: error
+    message: Root MIT LICENSE file is missing.
+
+  - id: require-readme
+    kind: file_exists
+    paths: README.md
+    level: error
+    message: Root README.md is missing.
+
+  - id: require-contributing
+    kind: file_exists
+    paths: CONTRIBUTING.md
+    level: error
+    message: Root CONTRIBUTING.md is missing.
+
+  - id: require-agents-md
+    kind: file_exists
+    paths: AGENTS.md
+    level: error
+    message: Root AGENTS.md is missing.
+
+  - id: require-claude-md
+    kind: file_exists
+    paths: CLAUDE.md
+    level: error
+    message: Root CLAUDE.md symlink is missing.
+
+  - id: require-changelog
+    kind: file_exists
+    paths: CHANGELOG.md
+    level: error
+    message: Root CHANGELOG.md is missing.
+
+  - id: require-cargo-workspace
+    kind: file_exists
+    paths: Cargo.toml
+    level: error
+    message: Root Cargo.toml workspace manifest is missing.
+
+  - id: require-cargo-lock
+    kind: file_exists
+    paths: Cargo.lock
+    level: error
+    message: Root Cargo.lock is missing.
+
+  - id: require-deny-toml
+    kind: file_exists
+    paths: deny.toml
+    level: error
+    message: Root deny.toml is missing.
+
+  - id: require-audit-toml
+    kind: file_exists
+    paths: .cargo/audit.toml
+    level: error
+    message: Required .cargo/audit.toml is missing.
+
+  - id: require-pixi-manifest
+    kind: file_exists
+    paths: pixi.toml
+    level: error
+    message: Required pixi.toml is missing.
+
+  - id: require-pixi-lock
+    kind: file_exists
+    paths: pixi.lock
+    level: error
+    message: Required pixi.lock is missing.
+
+  - id: require-sandbox-config
+    kind: file_exists
+    paths: pixi-sandbox.toml
+    level: error
+    message: Required pixi-sandbox.toml is missing.
+
+  - id: require-sandbox-restore
+    kind: file_exists
+    paths: scripts/restore.sh
+    level: error
+    message: Required scripts/restore.sh is missing.
+
+  - id: require-doit-cfg
+    kind: file_exists
+    paths: doit.cfg
+    level: error
+    message: Required doit.cfg pointing to tools/dodo.py is missing.
+
+  - id: require-tools-dodo-py
+    kind: file_exists
+    paths: tools/dodo.py
+    level: error
+    message: Required tools/dodo.py task registry is missing.
+
+  - id: require-tools-package
+    kind: file_exists
+    paths: tools/__init__.py
+    level: error
+    message: Required tools/__init__.py package is missing.
+
+  - id: require-free-models-registry
+    kind: file_exists
+    paths: registry/free-models.json
+    level: error
+    message: Required registry/free-models.json manifest is missing.
+
+  - id: require-conda-recipe
+    kind: file_exists
+    paths: crates/workloop/recipe/recipe.yaml
+    level: error
+    message: Required crates/workloop/recipe/recipe.yaml is missing.
+
+  - id: require-conda-variants
+    kind: file_exists
+    paths: crates/workloop/recipe/variants.yaml
+    level: error
+    message: Required crates/workloop/recipe/variants.yaml is missing.
+
+  - id: require-pypi-manifest
+    kind: file_exists
+    paths: crates/workloop/pyproject.toml
+    level: error
+    message: Required crates/workloop/pyproject.toml is missing.
+
+  - id: require-bun-manifest
+    kind: file_exists
+    paths: package.json
+    level: error
+    message: Root package.json is missing.
+
+  - id: require-bun-lock
+    kind: file_exists
+    paths: bun.lock
+    level: error
+    message: Root bun.lock is missing.
+
+  - id: require-skills-lock
+    kind: file_exists
+    paths: skills-lock.json
+    level: error
+    message: Root skills-lock.json is missing.
+
+  - id: require-hooks
+    kind: file_exists
+    paths: lefthook.yml
+    level: error
+    message: Required lefthook.yml is missing.
+
+  - id: require-ruff-config
+    kind: file_exists
+    paths: ruff.toml
+    level: error
+    message: Required ruff.toml is missing.
+
+  - id: require-mypy-config
+    kind: file_exists
+    paths: mypy.ini
+    level: error
+    message: Required mypy.ini is missing.
+
+  - id: require-taplo-config
+    kind: file_exists
+    paths: taplo.toml
+    level: error
+    message: Required taplo.toml is missing.
+
+  - id: require-convco-config
+    kind: file_exists
+    paths: .versionrc
+    level: error
+    message: Required .versionrc is missing.
+
+  - id: require-codecov-config
+    kind: file_exists
+    paths: codecov.yml
+    level: error
+    message: Required codecov.yml is missing.
+
+  - id: require-coveragerc
+    kind: file_exists
+    paths: .coveragerc
+    level: error
+    message: Required .coveragerc is missing.
+
+  - id: require-vale-toml
+    kind: file_exists
+    paths: vale.toml
+    level: error
+    message: Required vale.toml is missing.
+
+  - id: require-vale-ini
+    kind: file_exists
+    paths: .vale.ini
+    level: error
+    message: Generated .vale.ini is missing; run `pixi run automation prose_sync`.
+
+  - id: require-markdownlint-config
+    kind: file_exists
+    paths: .markdownlint-cli2.jsonc
+    level: error
+    message: Required .markdownlint-cli2.jsonc is missing.
+
+  - id: forbid-root-src
+    kind: dir_absent
+    paths: src
+    level: error
+    message: Root src/ is forbidden; keep Rust source inside crates/*/.
+
+  - id: forbid-root-tests
+    kind: dir_absent
+    paths: tests
+    level: error
+    message: Root tests/ is forbidden; keep crate tests in crates/*/tests/ and tools tests in tools/tests/.
+
+  - id: forbid-root-dodo-py
+    kind: file_absent
+    paths: dodo.py
+    level: error
+    message: Root dodo.py is forbidden; keep doit tasks centralized in tools/dodo.py via doit.cfg.
+
+  - id: forbid-root-pyproject
+    kind: file_absent
+    paths: pyproject.toml
+    level: error
+    message: Root pyproject.toml is forbidden; keep wheel config in crates/workloop/pyproject.toml.
+
+  - id: forbid-root-recipe
+    kind: dir_absent
+    paths: recipe
+    level: error
+    message: Root recipe/ is forbidden; keep Conda recipes under crates/workloop/recipe/.
+
+  - id: forbid-legacy-automation-dir
+    kind: dir_absent
+    paths: automation
+    level: error
+    message: Legacy automation/ directory is forbidden; keep Python automation under tools/.
+
+  - id: crates-contain-required-files
+    kind: dir_contains
+    select: crates/*
+    require:
+      - Cargo.toml
+      - LICENSE
+      - README.md
+      - src
+      - features
+      - tests
+    level: error
+    message: Every crate under crates/* must provide Cargo.toml, LICENSE, README.md, src/, features/, and tests/.
+
+  - id: tools-contain-required-layout
+    kind: dir_contains
+    select: tools
+    require:
+      - __init__.py
+      - dodo.py
+      - features
+      - tests
+    level: error
+    message: tools/ must contain __init__.py, dodo.py, features/, and tests/.
+
+  - id: require-docs-index
+    kind: file_exists
+    paths: docs/README.md
+    level: error
+    message: Required docs/README.md is missing.
+
+  - id: require-docs-guides-setup
+    kind: file_exists
+    paths: docs/guides/development-setup.md
+    level: error
+    message: Required docs/guides/development-setup.md is missing.
+
+  - id: require-docs-guides-checks
+    kind: file_exists
+    paths: docs/guides/running-the-checks.md
+    level: error
+    message: Required docs/guides/running-the-checks.md is missing.
+
+  - id: require-docs-guides-releasing
+    kind: file_exists
+    paths: docs/guides/releasing.md
+    level: error
+    message: Required docs/guides/releasing.md is missing.
+
+  - id: require-docs-concept-lifecycle
+    kind: file_exists
+    paths: docs/concepts/decoupled-lifecycle.md
+    level: error
+    message: Required docs/concepts/decoupled-lifecycle.md is missing.
+
+  - id: require-docs-architecture
+    kind: file_exists
+    paths: docs/architecture/overview.md
+    level: error
+    message: Required docs/architecture/overview.md is missing.
+
+  - id: require-docs-reference-tasks
+    kind: file_exists
+    paths: docs/reference/pixi-tasks.md
+    level: error
+    message: Required docs/reference/pixi-tasks.md is missing.
+
+  - id: require-docs-reference-layout
+    kind: file_exists
+    paths: docs/reference/repository-layout.md
+    level: error
+    message: Required docs/reference/repository-layout.md is missing.
+
+  - id: require-docs-standard
+    kind: file_exists
+    paths: docs/development/documentation.md
+    level: error
+    message: Required docs/development/documentation.md is missing.
+
+  - id: require-dependabot-config
+    kind: file_exists
+    paths: .github/dependabot.yml
+    level: error
+    message: Required .github/dependabot.yml is missing.
+
+  - id: require-issue-config
+    kind: file_exists
+    paths: .github/ISSUE_TEMPLATE/config.yml
+    level: error
+    message: Required .github/ISSUE_TEMPLATE/config.yml is missing.
+
+  - id: require-issue-bug-template
+    kind: file_exists
+    paths: .github/ISSUE_TEMPLATE/bug_report.yml
+    level: error
+    message: Required .github/ISSUE_TEMPLATE/bug_report.yml is missing.
+
+  - id: require-issue-feature-template
+    kind: file_exists
+    paths: .github/ISSUE_TEMPLATE/feature_request.yml
+    level: error
+    message: Required .github/ISSUE_TEMPLATE/feature_request.yml is missing.
+
+  - id: require-pull-request-template
+    kind: file_exists
+    paths: .github/PULL_REQUEST_TEMPLATE.md
+    level: error
+    message: Required .github/PULL_REQUEST_TEMPLATE.md is missing.
+
+  - id: issue-config-disables-blank-issues
+    kind: yaml_path_equals
+    paths: .github/ISSUE_TEMPLATE/config.yml
+    path: $.blank_issues_enabled
+    equals: false
+    level: error
+    message: Blank issues must remain disabled so reports flow through issue forms.
+
+  - id: bug-template-valid-body-types
+    kind: yaml_path_matches
+    paths: .github/ISSUE_TEMPLATE/bug_report.yml
+    path: $.body[*]['type']
+    matches: '^(markdown|input|textarea|dropdown|checkboxes)$'
+    level: error
+    message: bug_report.yml declares an invalid issue form field type.
+
+  - id: feature-template-valid-body-types
+    kind: yaml_path_matches
+    paths: .github/ISSUE_TEMPLATE/feature_request.yml
+    path: $.body[*]['type']
+    matches: '^(markdown|input|textarea|dropdown|checkboxes)$'
+    level: error
+    message: feature_request.yml declares an invalid issue form field type.
