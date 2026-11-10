@@ -92,7 +92,7 @@ Want [`archon`](https://archon.diy), GitHub Actions, or `cron` to supervise work
 [hooks]
 # Arbitrary environment bootstrap: pixi-sandbox today, `universe` tomorrow, or plain `cargo fetch`
 setup     = "sh scripts/restore.sh"
-next_task = "pixi run --locked backlog task list -s 'To Do' --plain | head -n 1"
+next_task = "pixi run --locked claim"
 gates     = "pixi run --locked fmt-check && pixi run --locked clippy && pixi run --locked coverage"
 merge     = "gh pr merge --squash --auto --delete-branch"
 release   = "pixi run --locked automation changelog"

@@ -7,7 +7,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
-from tools import changelog, coverage_gate, dodo, gherkin_lint, policy, prose, versions
+from tools import changelog, claim, coverage_gate, dodo, gherkin_lint, policy, prose, versions
 from tools.lib.github_actions import append_summary
 
 
@@ -270,3 +270,64 @@ def test_advisory_guard_flags_drift_between_the_two_files(tmp_path: Path) -> Non
 
     assert any("advisory ignore mismatch" in problem for problem in problems)
     assert policy.main(["advisory", "--root", str(tmp_path)]) == 1
+
+
+def _card(base: Path, card_id: str, *, status: str = "To Do", body: str | None = None) -> Path:
+    tasks = base / "backlog" / "tasks"
+    tasks.mkdir(parents=True, exist_ok=True)
+    path = tasks / f"{card_id.lower()}.md"
+    path.write_text(
+        body
+        if body is not None
+        else f"---\nid: {card_id}\nstatus: {status}\n---\n\n## Description\n\nBody.\n",
+        encoding="utf-8",
+    )
+    return path
+
+
+def test_claim_next_returns_none_when_every_card_is_taken(tmp_path: Path) -> None:
+    _card(tmp_path, "WKL-201", status="In Progress")
+    _card(tmp_path, "WKL-202", status="Done")
+
+    assert claim.claim_next(tmp_path / "backlog") is None
+    assert claim.main(["--backlog-dir", str(tmp_path / "backlog")]) == 1
+
+
+def test_claim_next_missing_backlog_is_an_environment_error(tmp_path: Path) -> None:
+    backlog_dir = tmp_path / "backlog"
+    (backlog_dir / "tasks").parent.mkdir(parents=True)
+    (backlog_dir / "tasks").write_text("not a directory\n", encoding="utf-8")
+
+    assert claim.main(["--backlog-dir", str(backlog_dir)]) == 2
+
+
+def test_claim_rejects_cards_without_frontmatter_or_id(tmp_path: Path) -> None:
+    no_frontmatter = _card(tmp_path, "WKL-203", body="No frontmatter here.\n")
+    assert claim.main(["--backlog-dir", str(tmp_path / "backlog")]) == 1
+    with pytest.raises(claim.ClaimError, match="no frontmatter"):
+        claim.claim(no_frontmatter)
+
+    no_frontmatter.write_text("---\nstatus: To Do\n---\n\nBody.\n", encoding="utf-8")
+    with pytest.raises(claim.ClaimError, match="no id"):
+        claim.claim(no_frontmatter)
+
+
+def test_claim_skips_cards_without_frontmatter(tmp_path: Path) -> None:
+    _card(tmp_path, "WKL-204", body="Loose notes, no frontmatter.\n")
+    _card(tmp_path, "WKL-205")
+
+    backlog_dir = tmp_path / "backlog"
+    assert claim.unclaimed_cards(backlog_dir) == [backlog_dir / "tasks" / "wkl-205.md"]
+    assert claim.main(["--backlog-dir", str(backlog_dir)]) == 0
+
+
+def test_claim_rewrites_only_the_status_line(tmp_path: Path) -> None:
+    lines = ["---", "id: WKL-206", "title: Keep me", "status: To Do", "milestone: m-1", "---"]
+    original = "\n".join([*lines, "", "## Body", "", "Text."]) + "\n"
+    card = _card(tmp_path, "WKL-206", body=original)
+
+    assert claim.claim(card) == "WKL-206"
+
+    assert card.read_text(encoding="utf-8") == original.replace(
+        "status: To Do", "status: In Progress"
+    )

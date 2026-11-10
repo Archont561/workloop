@@ -3,12 +3,13 @@
 from __future__ import annotations
 
 import json
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from pathlib import Path
 
 import pytest
 from pytest_bdd import given, parsers, scenarios, then, when
-from tools import gherkin_lint, policy
+from tools import claim, gherkin_lint, policy
 
 scenarios("../features/repo_tools.feature")
 
@@ -190,3 +191,50 @@ def then_advisory_parse_error(state: RepoState) -> None:
 @then("the advisory exception guard reports zero problems")
 def then_advisory_clean(state: RepoState) -> None:
     assert state.problems == []
+
+
+def _write_claimable_cards(base: Path, ids: list[str]) -> Path:
+    backlog_dir = base / "backlog"
+    tasks = backlog_dir / "tasks"
+    tasks.mkdir(parents=True)
+    for card_id in ids:
+        (tasks / f"{card_id.lower()}.md").write_text(
+            f"---\nid: {card_id}\ntitle: Card {card_id}\nstatus: To Do\n"
+            f"milestone: m-1\n---\n\n## Description\n\nBody for {card_id}.\n",
+            encoding="utf-8",
+        )
+    return backlog_dir
+
+
+@given("a temporary backlog with two unclaimed task cards", target_fixture="state")
+def given_two_unclaimed(tmp_path: Path) -> RepoState:
+    state = RepoState()
+    state.backlog_dir = _write_claimable_cards(tmp_path, ["WKL-101", "WKL-102"])
+    return state
+
+
+@when("two task claims run at the same time")
+def when_two_claims(state: RepoState) -> None:
+    assert state.backlog_dir is not None
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        futures = [pool.submit(claim.claim_next, state.backlog_dir) for _ in range(2)]
+        claimed = [future.result() for future in futures]
+    state.problems = [card_id for card_id in claimed if card_id is not None]
+
+
+@then("the task claimer hands each loop a different card")
+def then_distinct_cards(state: RepoState) -> None:
+    assert len(state.problems) == 2, state.problems
+    assert len(set(state.problems)) == 2, state.problems
+
+
+@then("both claimed cards are marked In Progress")
+def then_both_claimed(state: RepoState) -> None:
+    assert state.backlog_dir is not None
+    statuses = [
+        line
+        for card in sorted((state.backlog_dir / "tasks").glob("*.md"))
+        for line in card.read_text(encoding="utf-8").splitlines()
+        if line.startswith("status:")
+    ]
+    assert statuses == ["status: In Progress", "status: In Progress"]
