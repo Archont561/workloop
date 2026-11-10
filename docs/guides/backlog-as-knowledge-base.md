@@ -98,17 +98,24 @@ ordinary shell command, so the backlog is the queue:
 
 ```toml
 [hooks]
-next_task = "pixi run --locked backlog task list -s 'To Do' --plain | head -n 1"
+next_task = "pixi run --locked claim"
 ```
+
+`pixi run --locked claim` (`tools/claim.py`) is the atomic form. It takes an
+exclusive lock over `backlog/`, re-reads the queue inside that lock, moves the
+first unclaimed card to `In Progress`, and prints the id. It exits `1` when no
+card is available and `2` on an environment error, and it writes nothing in
+either case.
 
 `workloop open` runs that command, records the selected card in
 `.workloop/state.json`, and later verbs use it. Two consequences follow, and
 both matter more as parallelism grows:
 
-- **Selection is a query, not a reservation.** Two loops started at the same
-  moment read the same `To Do` list and can pick the same card. Claim the card
-  (`task edit <id> -s "In Progress"`) before work starts, or give each loop an
-  explicit scope so it never runs the query at all.
+- **Claim through one code path.** A raw `task list | head -n 1` is a query,
+  not a reservation: two loops read the same `To Do` list and pick the same
+  card. `tools/claim.py` closes that window with a lock around the
+  read-and-mark transaction. Bypassing it turns the race back on, so route every
+  loop through `pixi run --locked claim`.
 - **The card is the shared contract between agents.** Because the criteria live
   in the card, the implementer, the reviewer, and the gate all read the same
   definition of finished. Nothing depends on a prompt surviving in a chat log.

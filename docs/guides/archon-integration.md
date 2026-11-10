@@ -91,7 +91,7 @@ wired by hand:
 ```toml
 [hooks]
 setup     = "sh scripts/restore.sh"
-next_task = "pixi run --locked backlog task list -s 'To Do' --plain | head -n 1"
+next_task = "pixi run --locked claim"
 gates     = "pixi run --locked fmt-check && pixi run --locked clippy && pixi run --locked automation check_policy"
 merge     = "gh pr merge --squash --auto --delete-branch"
 release   = "pixi run --locked automation changelog"
@@ -146,10 +146,11 @@ provider URL, and `workloop` never learns an Archon path.
 Archon already isolates runs by worktree, which is the isolation `workloop`
 deliberately does not implement. Two caveats follow from that split:
 
-- **Claim the task before the run starts.** `hooks.next_task` is a query. Two
-  runs dispatched together can select the same card. Set the card to
-  `In Progress` from the dispatching step, or pass a scope so each run never
-  queries.
+- **Claim, do not query.** A plain `backlog task list | head -n 1` is a query,
+  so two runs dispatched together select the same card. Point `hooks.next_task`
+  at `pixi run --locked claim`, which takes a lock, re-reads the backlog, moves
+  one card to `In Progress`, and prints its id. Run it once per loop, before the
+  task is dispatched.
 - **Expect provider pools to be shared.** Every run draws on the same free
   pools. The quota scopes in `registry/free-models.json` are what stop one
   throttled provider from stalling every run, and

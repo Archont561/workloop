@@ -38,3 +38,9 @@ Feature: Repository automation and policy tools
     Given a temporary workspace whose audit config matches deny.toml exactly
     When the advisory exception guard validates that workspace
     Then the advisory exception guard reports zero problems
+
+  Scenario: Two loops never claim the same backlog task
+    Given a temporary backlog with two unclaimed task cards
+    When two task claims run at the same time
+    Then the task claimer hands each loop a different card
+    And both claimed cards are marked In Progress

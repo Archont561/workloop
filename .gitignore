@@ -32,6 +32,7 @@ __pycache__/
 
 # Workloop runtime state & scratch files
 /.workloop/
+/backlog/.claim.lock
 /AGENTS.generated.md
 /.doit.db*
 .DS_Store

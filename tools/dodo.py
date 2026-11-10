@@ -10,7 +10,7 @@ ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from tools import changelog, coverage_gate, gherkin_lint, policy, prose, versions  # noqa: E402
+from tools import changelog, claim, coverage_gate, gherkin_lint, policy, prose, versions  # noqa: E402
 
 DOIT_CONFIG: dict[str, Any] = {
     "default_tasks": ["check_policy"],
@@ -125,6 +125,14 @@ def task_changelog_check() -> dict[str, Any]:
     """Fail if `CHANGELOG.md` has drifted from Conventional Commits history."""
     return {
         "actions": [(lambda: _exit_ok(changelog.main(["check"], root=ROOT)))],
+    }
+
+
+def task_claim() -> dict[str, Any]:
+    """Claim the next unclaimed backlog card atomically for one loop."""
+    return {
+        "actions": [(lambda: claim.main(["--backlog-dir", str(ROOT / "backlog")]))],
+        "verbosity": 2,
     }
 
 
