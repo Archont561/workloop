@@ -19,6 +19,12 @@ Canonical documentation for `Archont561/workloop`.
   Vale prose, `alint`, Gherkin, and `>= 90%` coverage gates.
 - [Releasing](guides/releasing.md) — version synchronization, `convco`
   changelog generation, Conda (`rattler-build`), and PyPI (`maturin`) builds.
+- [Backlog as a knowledge base](guides/backlog-as-knowledge-base.md) — how
+  specification, decision records, milestones, and task cards fit together, and
+  the frontmatter rules that make the backlog safe to automate.
+- [Using workloop with Archon](guides/archon-integration.md) — which tool owns
+  which responsibility, the node-to-verb mapping, and the four rules that keep
+  the layers apart.
 - [Documentation standard](development/documentation.md) — `vale.toml` rules,
   `markdownlint-cli2`, and offline link checking.
 
