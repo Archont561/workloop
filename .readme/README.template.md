@@ -11,7 +11,6 @@
   <a href="https://github.com/Archont561/workloop/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/Archont561/workloop/ci.yml?branch=main&amp;label=CI&amp;logo=github" alt="CI status" /></a>
   <a href="https://codecov.io/gh/Archont561/workloop"><img src="https://img.shields.io/codecov/c/github/Archont561/workloop?logo=codecov&amp;label=coverage%20%28%E2%89%A590%25%29" alt="Codecov coverage" /></a>
   <a href="https://prefix.dev/channels/archont561"><img src="https://img.shields.io/badge/prefix.dev-archont561%2Fworkloop-f5a623?logo=anaconda&amp;logoColor=white" alt="prefix.dev package" /></a>
-  <a href="https://crates.io/crates/workloop"><img src="https://img.shields.io/crates/v/workloop?logo=rust" alt="Crates.io version" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-<%= licenseName %>-blue.svg" alt="License: <%= licenseName %>" /></a>
 </p>
 
@@ -37,7 +36,7 @@ Yet wiring them into a reliable, unattended feature pipeline on GitHub breaks do
 3. **Orchestrator lock-in.** Tools that force a proprietary `.archon/` template or single agent CLI break as soon as you switch between `goose`, `opencode`, `aider`, GitHub Actions, or a local shell loop.
 4. **Unbounded autonomy is risky.** Merging small, verified tasks is safe; cutting a public release without a human checkpoint is not.
 
-**`workloop`** is a small, single-binary Rust tool built on [`clifacet`](https://crates.io/crates/clifacet) and distributed via `conda`/`pixi` (`prefix.dev/archont561/archont561`), `cargo`, and `pipx`/`uvx`:
+**`workloop`** is a small, single-binary Rust tool built on [`clifacet`](https://crates.io/crates/clifacet) and distributed via `conda`/`pixi` (`prefix.dev/archont561/archont561`), PyPI (`pipx`/`uvx`), and a from-source `cargo install --path crates/workloop` build:
 
 - 🔀 **Localhost Free-Model Failover Proxy** — spins up an ephemeral `127.0.0.1` OpenAI-compatible router backed by [`registry/free-models.json`](registry/free-models.json) that transparently rotates across free model providers on `429`, `502/503`, or context overflow while keeping API keys redacted via `clifacet::secret::Secret`.
 - 🧩 **Four Orchestrator-Decoupled Verbs** — `open`, `exec`, `verify`, and `close` work identically inside a 4-line shell loop, `archon`, GitHub Actions, or `doit` — with **zero** `.archon/` template generation.
