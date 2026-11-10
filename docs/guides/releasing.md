@@ -44,7 +44,10 @@ Releases stay synchronized across `Cargo.toml`, `pixi.toml`, `package.json`, and
 | Conda package | `linux-64`, `osx-arm64` | `https://prefix.dev/archont561/archont561` |
 | Python wheel and sdist | the runner's platform | GitHub Actions artifacts |
 
-The Conda recipe declares five platforms (`linux-64`, `linux-aarch64`,
-`osx-64`, `osx-arm64`, `win-64`), but `release.yml` builds two of them. A tag
-publishes only the pair in that table, so anything relying on the other three
-needs a matrix entry first.
+The recipe, `pixi.toml`'s `[feature.packaging]` platform list, and the matrix in
+`release.yml` all name the same two targets. `linux-aarch64`, `osx-64`, and
+`win-64` are explicitly unsupported (`decision-8`): a user on one of them builds
+from source with `cargo install --path crates/workloop`. Adding a platform is a
+single pull request that adds the matrix entry, the variant, and the `pixi`
+platform together — `python tools/policy.py distribution` fails if only some of
+them move. Nothing publishes to crates.io (`decision-7`).

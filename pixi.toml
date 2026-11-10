@@ -36,8 +36,9 @@ pytest-bdd = "==9.0.1"
 [feature.dev]
 platforms = ["linux-64"]
 
+# Keep in lockstep with the `conda` matrix in .github/workflows/release.yml (decision-8).
 [feature.packaging]
-platforms = ["linux-64", "linux-aarch64", "osx-64", "osx-arm64", "win-64"]
+platforms = ["linux-64", "osx-arm64"]
 
 [feature.packaging.dependencies]
 rattler-build = "=0.80.0"

@@ -26,7 +26,7 @@ pixi run --locked backlog board
 pixi run --locked backlog task list --plain
 ```
 
-Read relevant ADRs in `backlog/decisions/` (`decision-1` through `decision-6`)
+Read relevant ADRs in `backlog/decisions/` (`decision-1` through `decision-8`)
 before proposing new dependencies or CLI surfaces.
 
 ## 3. Confirm baseline policy and tests

@@ -13,13 +13,9 @@ source:
 
 build:
   number: 0
+  # Only unix targets are built (see decision-8); a win branch here would be YAML no CI job runs.
   script:
-    - if: unix
-      then:
-        - cargo install --locked --no-track --root "$PREFIX" --path crates/workloop
-    - if: win
-      then:
-        - cargo install --locked --no-track --root "%LIBRARY_PREFIX%" --path crates/workloop
+    - cargo install --locked --no-track --root "$PREFIX" --path crates/workloop
 
 requirements:
   build:
